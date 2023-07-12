@@ -426,6 +426,10 @@ def main():
             model_name = st.sidebar.selectbox("Select Model", ["Linear Regression", "KNN Regression", "Decision Tree Regression", "Random Forest Regression",  "KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "Logistic Regression Classifier"])
             target = st.selectbox("Select the target variable", data.columns)
             selected_columns1 = st.multiselect("Select independent variables",data.columns)
+            if not selected_columns1:
+                st.info("Please select at least one variable.")
+                return
+
             x = data[selected_columns1] #data.drop(target, axis=1)
             y = data[target]
             split_ratio = st.number_input('Enter a test/train split ratio', min_value=0.1, max_value=0.9, value=0.2, step=0.1)
