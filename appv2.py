@@ -29,6 +29,23 @@ from scipy.stats.mstats import winsorize
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.cluster import DBSCAN
+import base64
+
+def add_bg_from_local(image_file):
+    with open(image_file, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+    st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+        background-size: cover
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
+
 def z_score_method(data):
     numeric_cols = data.select_dtypes(include=[np.number])
     z_scores = np.abs(stats.zscore(numeric_cols))
@@ -145,15 +162,20 @@ def standardize(variables):
 
 
 def main():
+    # Load Image
+    add_bg_from_local('background.png')  
     st.title('My ML buddy in Progress')
-    st.header("Welcome to the Future of Predictive Analytics! 🚀")
-    st.write("In the constantly evolving digital world, the true power lies within data. It shapes strategies, inspires innovations, and propels businesses to greater heights. But unlocking the full potential of data can be a daunting task. That's where we come in! I am thrilled to welcome you to our revolutionary web application, designed to simplify and amplify the way you work with data. Whether you're a data science expert or just getting started, our application is your gateway to the exciting world of machine learning.The best part? It's absolutely FREE to use! Load your data, effortlessly preprocess it, implement a wide array of supervised machine learning models, and instantly visualize the results. Our user-friendly interface transforms complex data operations into a few clicks, making data more accessible than ever before. It's a tool built to empower you, to transform your decisions with the power of predictive analytics. Beyond this dynamic tool, we offer expert freelance data science services. With extensive experience in Python and R programming, we're here to support you through your data journey, from start to finish. From guidance on intricate data projects to hands-on coding assistance, consider us your go-to resource. So, why wait? Experience the power of data at your fingertips. Dive into the world of insights and predictive power right now! Remember, no matter where you are on your data journey, we're here to help you make the most of it. Don't just predict the future, define it with data. For more information, feel free to contact us. We look forward to embarking on this exciting journey with you! Let's turn data into decisions. Welcome to the future of predictive analytics! 🌐")
+    
     file = st.file_uploader("Upload your dataset", type=['csv'])
     
     if file is not None:
+    
         data = pd.read_csv(file)
-        task = st.sidebar.selectbox("Tasks", ["EDA","Preprocessing" ,"Machine Learning Models"])
+        task = st.sidebar.selectbox("Tasks", ["EDA","Preprocessing" ,"Machine Learning Models","About Me"])
         if task == "EDA":
+            st.header("Welcome to the Future of Predictive Analytics! 🚀.")
+            st.write("In the constantly evolving digital world, the true power lies within data. It shapes strategies, inspires innovations, and propels businesses to greater heights. But unlocking the full potential of data can be a daunting task. That's where we come in! I am thrilled to welcome you to our revolutionary web application, designed to simplify and amplify the way you work with data. Whether you're a data science expert or just getting started, our application is your gateway to the exciting world of machine learning.The best part? It's absolutely FREE to use! Load your data, effortlessly preprocess it, implement a wide array of supervised machine learning models, and instantly visualize the results. Our user-friendly interface transforms complex data operations into a few clicks, making data more accessible than ever before. It's a tool built to empower you, to transform your decisions with the power of predictive analytics. Beyond this dynamic tool, we offer expert freelance data science services. With extensive experience in Python and R programming, we're here to support you through your data journey, from start to finish. From guidance on intricate data projects to hands-on coding assistance, consider us your go-to resource. So, why wait? Experience the power of data at your fingertips. Dive into the world of insights and predictive power right now! Remember, no matter where you are on your data journey, we're here to help you make the most of it. Don't just predict the future, define it with data. For more information, feel free to contact us. We look forward to embarking on this exciting journey with you! Let's turn data into decisions. Welcome to the future of predictive analytics! 🌐")
+   
             st.write("First five data rows")
             st.write(data.head())
             st.write("Missing values table")
@@ -165,6 +187,7 @@ def main():
             st.write(data.describe())
             st.header("Data Visualization")
             st.write("Numeric Variables")
+            selected_columns = st.multiselect("Select Columns To Plot",data.columns)
     
             # Define your columns
             col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -178,8 +201,7 @@ def main():
             violin_button = col6.button("Violin Plot")
 
 
-            selected_columns = st.multiselect("Select Columns To Plot",data.columns)
-    
+            
 
     
             bins = st.slider("Number of bins for histogram", 5, 100, 20)
@@ -233,11 +255,13 @@ def main():
             st.write(data.shape)
 
             numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
+            st.subheader("Normalization")
             selected_columns1 = st.multiselect("Please choose the variables from normalization", numeric_columns)
             selected_data = data[selected_columns1].values  # Extract the selected data as a NumPy array
             normalized_data = normalize(selected_data)  # Apply normalization to the selected data
             data[selected_columns1] = normalized_data  # Update the DataFrame with the normalized values
             st.write(data.head())
+            st.subheader("Standardization")
             selected_columns1 = st.multiselect("Select independent variables for standardization", numeric_columns)
             if selected_columns1:  # Check if any variables were selected
                 selected_data = data[selected_columns1]  # Extract the selected data as a DataFrame
@@ -250,7 +274,7 @@ def main():
             st.write("Note:  Normalization should be used when we hae different units across variables.")
             st.write("Note:  Standardization is a common preprocessing technique used in machine learning and data analysis that modifies numerical features so they have a mean of 0 and standard deviation of 1.")
 
-            st.subheader('Outlier Detection')
+            st.subheader('Outlier Detection Based on IQR')
             outliers_count, outliers_indices = detect_outliers(data[numeric_columns])
             st.write('Count of outliers in each selected column:')
             st.write(outliers_count)
@@ -332,32 +356,53 @@ def main():
                      st.write(data.head())
                      st.write('Shape of Data: ', data.shape)
                      
-            st.header("Recoding-cat to numeric (One Hot Encoding)")
+            st.header("Recoding variables-cat to numeric")
                      
             #########################################################################
         # Create multiselect menu for categorical columns
-            categorical_cols = st.multiselect("Select the categorical columns you want to encode", data.columns)
+            # categorical_cols = st.multiselect("Select the categorical columns you want to encode", data.columns)
         
-            if categorical_cols:
+            # if categorical_cols:
         
-                if st.button('One-Hot Encoding'):
-                    # Perform One-Hot Encoding:
-                    data = pd.get_dummies(data, columns=categorical_cols)
-                    st.write('Data after one-hot encoding:')
-                    st.write(data)
+            #     if st.button('One-Hot Encoding'):
+            #         # Perform One-Hot Encoding:
+            #         data = pd.get_dummies(data, columns=categorical_cols)
+            #         st.write('Data after one-hot encoding:')
+            #         st.write(data)
         
-                if st.button('Label Encoding'):
-                    # Create a label encoder object for Label Encoding
-                    le = LabelEncoder()
+            #     if st.button('Label Encoding'):
+            #         # Create a label encoder object for Label Encoding
+            #         le = LabelEncoder()
         
-                    for col in categorical_cols:
-                        # Fit and transform the selected columns
-                        data[col] = le.fit_transform(data[col])
+            #         for col in categorical_cols:
+            #             # Fit and transform the selected columns
+            #             data[col] = le.fit_transform(data[col])
                     
-                    st.write('Data after label encoding:')
-                    st.write(data)
-            else:
-                st.write("No categorical column selected!")
+            #         st.write('Data after label encoding:')
+            #         st.write(data)
+            # else:
+            #     st.write("No categorical column selected!")
+            one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
+            label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
+            
+            if one_hot_cols:
+                # Perform One-Hot Encoding:
+                data = pd.get_dummies(data, columns=one_hot_cols)
+                st.write('Data after one-hot encoding:')
+                st.write(data)
+            
+            if label_cols:
+                # Create a label encoder object for Label Encoding
+                le = LabelEncoder()
+            
+                for col in label_cols:
+                    # Fit and transform the selected columns
+                    data[col] = le.fit_transform(data[col])
+                st.write('Data after label encoding:')
+                st.write(data)
+
+
+
             #########################################################################
             data.to_csv('preprocessed_data.csv', index=False)
             
@@ -570,7 +615,13 @@ def main():
                 st.pyplot(fig)
                 report = classification_report(y_test, y_pred, target_names=model.classes_)
                 st.text(report)
-                        
+        if task == 'About Me':
+            st.subheader("Data Scientist behind the app")
+            st.write("Hello everyone, this app is created and managed by Sajid Hafeez, Data scientist at Rprogrammers.com.")
+            st.write("I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following emails.")
+            st.write("Email: Sajidhafeex@gmail.com")
+            st.write("LinkedIn: https://www.linkedin.com/in/sajid-hafeex")
+            st.write("Rprogrammers.com")
             
 
 if __name__ == '__main__':
