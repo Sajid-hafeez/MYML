@@ -30,6 +30,14 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.cluster import DBSCAN
 import base64
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+# import base64
 
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as image_file:
@@ -253,6 +261,58 @@ def main():
             st.header("Welcome to preprocessing tab")
             st.write("Data Shape")
             st.write(data.shape)
+            ##################################################################
+            st.subheader('Raw data')
+            st.write(data)
+        
+            imputation_methods = ['Remove rows with missing values',
+                                  'Mean for numerical, Mode for categorical',
+                                  'Zero imputation',
+                                  'Iterative (multivariate) imputation',
+                                  'Most frequent/constant']
+        
+            # Show only those variables that have missing values
+            missing_cols = data.columns[data.isna().any()].tolist()
+            if not missing_cols:
+                st.write("No columns with missing values in the uploaded file")
+            else:
+                st.subheader('Columns with missing values')
+                st.write(missing_cols)
+        
+                # Choose column for imputation
+                selected_columns = st.multiselect('Choose columns for imputation', missing_cols)
+        
+                
+                for column in selected_columns:
+                    temp_data = data.copy()  # reset to original data each time
+        
+                    method = st.selectbox(f'Choose an imputation method for {column}', imputation_methods)
+                    if method == 'Remove rows with missing values':
+                        temp_data = temp_data.dropna()
+                        data = data.dropna()
+        
+                    elif method == 'Mean for numerical, Mode for categorical':
+                        if data[column].dtype == 'object':
+                            temp_data[column].fillna(data[column].mode()[0], inplace=True)
+                        else:
+                            temp_data[column].fillna(data[column].mean(), inplace=True)
+        
+                    elif method == 'Zero imputation':
+                        temp_data[column].fillna(0, inplace=True)
+        
+                    elif method == 'Iterative (multivariate) imputation':
+                        imp = IterativeImputer(max_iter=10, random_state=0)
+                        temp_data[column] = imp.fit_transform(data[[column]])
+        
+                    elif method == 'Most frequent/constant':
+                        temp_data[column].fillna(data[column].value_counts().index[0], inplace=True)
+        
+                    data[column] = temp_data[column]  # update only the specific column
+        
+                    st.subheader('Imputed data')
+                    st.write(data)            
+          #  del temp_data
+            ##################################################################
 
             numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
             st.subheader("Normalization")
@@ -280,6 +340,27 @@ def main():
             st.write(outliers_count)
             st.write('Indices of outliers in each selected column:')
             st.write(outliers_indices)
+            
+            one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
+            label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
+            
+            if one_hot_cols:
+                # Perform One-Hot Encoding:
+                data = pd.get_dummies(data, columns=one_hot_cols)
+                st.write('Data after one-hot encoding:')
+                st.write(data)
+            
+            if label_cols:
+                # Create a label encoder object for Label Encoding
+                le = LabelEncoder()
+            
+                for col in label_cols:
+                    # Fit and transform the selected columns
+                    data[col] = le.fit_transform(data[col])
+                st.write('Data after label encoding:')
+                st.write(data)
+
+
   
         
             st.header("Outlier Detection & Removal")
@@ -382,29 +463,14 @@ def main():
             #         st.write(data)
             # else:
             #     st.write("No categorical column selected!")
-            one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
-            label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
             
-            if one_hot_cols:
-                # Perform One-Hot Encoding:
-                data = pd.get_dummies(data, columns=one_hot_cols)
-                st.write('Data after one-hot encoding:')
-                st.write(data)
-            
-            if label_cols:
-                # Create a label encoder object for Label Encoding
-                le = LabelEncoder()
-            
-                for col in label_cols:
-                    # Fit and transform the selected columns
-                    data[col] = le.fit_transform(data[col])
-                st.write('Data after label encoding:')
-                st.write(data)
-
-
 
             #########################################################################
             data.to_csv('preprocessed_data.csv', index=False)
+            csv = data.to_csv(index=False)
+            b64 = base64.b64encode(csv.encode()).decode()
+            href = f'<a href="data:file/csv;base64,{b64}">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
+            st.markdown(href, unsafe_allow_html=True)
             
 
             ###########################
