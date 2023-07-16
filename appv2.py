@@ -388,7 +388,7 @@ def main():
                 # Perform One-Hot Encoding:
                 data = pd.get_dummies(data, columns=one_hot_cols)
                 st.write('Data after one-hot encoding:')
-                st.write(data)
+                st.dataframe(data)
             
             if label_cols:
                 # Create a label encoder object for Label Encoding
@@ -398,11 +398,11 @@ def main():
                     # Fit and transform the selected columns
                     data[col] = le.fit_transform(data[col])
                 st.write('Data after label encoding:')
-                st.write(data)
+                st.dataframe(data)
 
 
   ##############################################################
-            st.dataframe(data)  # Use dataframe() to make it more pretty
+            #st.dataframe(data)  # Use dataframe() to make it more pretty
             st.write('---------------------------------------------')
             st.header('Column creation based on existing variables')
             st.write('---------------------------------------------')
