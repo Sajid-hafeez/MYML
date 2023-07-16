@@ -4,6 +4,7 @@ Created on Tue Jun 13 02:37:31 2023
 
 @author: Sajid
 """
+from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -174,11 +175,25 @@ def main():
     add_bg_from_local('background.png')  
     st.title('My ML buddy in Progress')
     
-    file = st.file_uploader("Upload your dataset", type=['csv'])
-    
+    #file = st.file_uploader("Upload your dataset", type=['csv'])
+    file = st.file_uploader("Upload your dataset", type=['csv', 'txt', 'json', 'xlsx', 'xls'])
     if file is not None:
+        file_details = {"FileName":file.name,"FileType":file.type,"FileSize":file.size}
+        st.write(file_details)
+        
+        if file_details["FileType"] == "text/csv":
+            data = pd.read_csv(file)
+       #     st.write(data)
+        elif file_details["FileType"] == "application/vnd.ms-excel" or file_details["FileType"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+            data = pd.read_excel(file)
+       #     st.write(data)
+        elif file_details["FileType"] == "application/json":
+            data = pd.read_json(file)
+        #    st.write(data)
     
-        data = pd.read_csv(file)
+    # if file is not None:
+    
+    #     data = pd.read_csv(file)
         task = st.sidebar.selectbox("Tasks", ["EDA","Preprocessing" ,"Machine Learning Models","About Me"])
         if task == "EDA":
             st.header("Welcome to the Future of Predictive Analytics! 🚀.")
@@ -193,6 +208,16 @@ def main():
     #        st.write(data.info())
             st.write("Basic Statistical summary")        
             st.write(data.describe())
+            #########################################
+            # st.write("Test code starts here")
+            # st.write(data)
+            # st.write("Test code ends here")
+            
+            
+            ##########################################
+            
+            
+            
             st.header("Data Visualization")
             st.write("Numeric Variables")
             selected_columns = st.multiselect("Select Columns To Plot",data.columns)
@@ -255,13 +280,18 @@ def main():
                     plt.xticks(rotation=90)  # rotate x-axis labels for better visibility
                     st.pyplot(fig)
 
-
+#########################################################################################################################################################################################################################################################################
+# Pre-Processing
+#########################################################################################################################################################################################################################################################################
 
         if task == 'Preprocessing':
             st.header("Welcome to preprocessing tab")
             st.write("Data Shape")
             st.write(data.shape)
-            ##################################################################
+            st.write('---------------------------------------------')
+            st.header('Missing Values imputation')
+            st.write('---------------------------------------------')
+
             st.subheader('Raw data')
             st.write(data)
         
@@ -315,13 +345,18 @@ def main():
             ##################################################################
 
             numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
-            st.subheader("Normalization")
+            st.write('---------------------------------------------')
+            st.header('Normalization')
+            st.write('---------------------------------------------')
             selected_columns1 = st.multiselect("Please choose the variables from normalization", numeric_columns)
             selected_data = data[selected_columns1].values  # Extract the selected data as a NumPy array
             normalized_data = normalize(selected_data)  # Apply normalization to the selected data
             data[selected_columns1] = normalized_data  # Update the DataFrame with the normalized values
             st.write(data.head())
-            st.subheader("Standardization")
+            st.write('---------------------------------------------')
+            st.header('Standardization')
+            st.write('---------------------------------------------')
+
             selected_columns1 = st.multiselect("Select independent variables for standardization", numeric_columns)
             if selected_columns1:  # Check if any variables were selected
                 selected_data = data[selected_columns1]  # Extract the selected data as a DataFrame
@@ -333,13 +368,18 @@ def main():
 
             st.write("Note:  Normalization should be used when we hae different units across variables.")
             st.write("Note:  Standardization is a common preprocessing technique used in machine learning and data analysis that modifies numerical features so they have a mean of 0 and standard deviation of 1.")
+            st.write('---------------------------------------------')
+            st.header('Outliers index based on IQR method')
+            st.write('---------------------------------------------')
 
-            st.subheader('Outlier Detection Based on IQR')
             outliers_count, outliers_indices = detect_outliers(data[numeric_columns])
             st.write('Count of outliers in each selected column:')
             st.write(outliers_count)
             st.write('Indices of outliers in each selected column:')
             st.write(outliers_indices)
+            st.write('---------------------------------------------')
+            st.header('One Hot Encoding & Label Encoding')
+            st.write('---------------------------------------------')
             
             one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
             label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
@@ -361,9 +401,39 @@ def main():
                 st.write(data)
 
 
-  
+  ##############################################################
+            st.dataframe(data)  # Use dataframe() to make it more pretty
+            st.write('---------------------------------------------')
+            st.header('Column creation based on existing variables')
+            st.write('---------------------------------------------')
+            st.write('You can create new variable based on the mathematical operations from pervious variables')
+            st.write('It supports ADDITION, SUBSTRACTION, DIVIDE, MULTIPLICATION, EXPONENTIAL, EXP/LOG, ABSOLUTE, TRANOMETRIC FUNCTIONS AND CONDITIONS')
+            st.write('E.g.New variable can be created from equations like this')
+            st.markdown("if equation is: $new\_variable = 3 \cdot var1 + var2^2$")
+            st.write("You can write this in formula 3* var1 + var2**2")
+            # Input for new variable
+            new_var = st.text_input('Enter new variable name')
+    
+            # Input for formula
+            formula = st.text_input('Enter formula for new variable (use var names from the data)')
+    
+            if new_var and formula:  # Only try to create the column if the variable name and formula are provided
+                try:
+                    # Calculate the new variable
+                    data[new_var] = data.eval(formula)
+                    st.dataframe(data)  # Use dataframe() to make it more pretty
+                except KeyError as e:
+                    st.write(f'Invalid variable in formula: {str(e)}')
+                except Exception as e:
+                    st.write(f'Error occurred: {str(e)}')
+      
         
-            st.header("Outlier Detection & Removal")
+    ##############################################################
+            st.write('---------------------------------------------')
+            st.header('Outlier Detection & Removal')
+            st.write('---------------------------------------------')
+
+            # st.header("Outlier Detection & Removal")
             st.write("The following buttons will detect the outliers with the mentioned method and also remove it from the data.")
             col1, col2, col3 = st.columns(3)
         
@@ -473,9 +543,9 @@ def main():
             st.markdown(href, unsafe_allow_html=True)
             
 
-            ###########################
+ #           ###########################
             
-            
+  ###############################################################################################################################################################################################################################################          
             
             
         if task == "Machine Learning Models":
@@ -489,7 +559,7 @@ def main():
             st.header("Machine Learning")
             st.write("Data Shape")
             st.write(data.shape)
-            model_name = st.sidebar.selectbox("Select Model", ["Linear Regression", "KNN Regression", "Decision Tree Regression", "Random Forest Regression",  "KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "Logistic Regression Classifier"])
+            model_name = st.sidebar.selectbox("Select Model", ["Linear Regression", "KNN Regression", "Decision Tree Regression", "Random Forest Regression", "SVM Regressor",  "KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "Logistic Regression Classifier","SVM Classifier"])
             target = st.selectbox("Select the target variable", data.columns)
             selected_columns1 = st.multiselect("Select independent variables",data.columns)
             if not selected_columns1:
@@ -533,7 +603,28 @@ def main():
                 plt.xlabel('Residuals')
                 st.pyplot(fig)
                 #########################################################################
+            elif model_name == "SVM Regressor":
                 
+                model = SVR(kernel='rbf')
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                evaluate_regression(y_test, y_pred)
+            
+                # Plotting predicted vs actual values
+                fig, ax = plt.subplots()
+                sns.scatterplot(x=y_test, y=y_pred)
+                plt.xlabel('Actual Values')
+                plt.ylabel('Predicted Values')
+                st.pyplot(fig)
+            
+                # Plotting residuals
+                residuals = y_test - y_pred
+                fig, ax = plt.subplots()
+                sns.distplot(residuals)
+                plt.xlabel('Residuals')
+                st.pyplot(fig)
+
+            
             elif model_name == "KNN Regression":
                 model = KNeighborsRegressor()
                 model.fit(X_train, y_train)
@@ -685,6 +776,30 @@ def main():
                 st.pyplot(fig)
                 report = classification_report(y_test, y_pred, target_names=model.classes_)
                 st.text(report)
+                
+            elif model_name == "SVM Classifier":
+                from sklearn.svm import SVC
+                model = SVC()
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                
+                # Plotting predicted vs actual values
+                fig, ax = plt.subplots()
+                sns.scatterplot(x=y_test, y=y_pred)
+                plt.xlabel('Actual Values')
+                plt.ylabel('Predicted Values')
+                st.pyplot(fig)
+            
+                # Confusion matrix
+                cm = metrics.confusion_matrix(y_test, y_pred)
+                fig, ax = plt.subplots()
+                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                st.pyplot(fig)
+                report = classification_report(y_test, y_pred, target_names=model.classes_)
+                st.text(report)
+
         if task == 'About Me':
             st.subheader("Data Scientist behind the app")
             st.write("Hello everyone, this app is created and managed by Sajid Hafeez, Data scientist at Rprogrammers.com.")
