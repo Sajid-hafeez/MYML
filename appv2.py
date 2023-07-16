@@ -172,6 +172,10 @@ def standardize(variables):
 
 def main():
     # Load Image
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
+    if "preprocessed_data" not in st.session_state:
+        st.session_state["preprocessed_data"] = None
     add_bg_from_local('background.png')  
     st.title('My ML buddy in Progress')
     
@@ -279,268 +283,274 @@ def main():
                     sns.violinplot(x='variable', y='value', data=df_melt, ax=ax)
                     plt.xticks(rotation=90)  # rotate x-axis labels for better visibility
                     st.pyplot(fig)
+                    
+            st.session_state["data"] = data
 
 #########################################################################################################################################################################################################################################################################
 # Pre-Processing
 #########################################################################################################################################################################################################################################################################
 
         if task == 'Preprocessing':
-            st.header("Welcome to preprocessing tab")
-            st.write("Data Shape")
-            st.write(data.shape)
-            st.write('---------------------------------------------')
-            st.header('Missing Values imputation')
-            st.write('---------------------------------------------')
-
-            st.subheader('Raw data')
-            st.write(data)
-        
-            imputation_methods = ['Remove rows with missing values',
-                                  'Mean for numerical, Mode for categorical',
-                                  'Zero imputation',
-                                  'Iterative (multivariate) imputation',
-                                  'Most frequent/constant']
-        
-            # Show only those variables that have missing values
-            missing_cols = data.columns[data.isna().any()].tolist()
-            if not missing_cols:
-                st.write("No columns with missing values in the uploaded file")
-            else:
-                st.subheader('Columns with missing values')
-                st.write(missing_cols)
-        
-                # Choose column for imputation
-                selected_columns = st.multiselect('Choose columns for imputation', missing_cols)
-        
-                
-                for column in selected_columns:
-                    temp_data = data.copy()  # reset to original data each time
-        
-                    method = st.selectbox(f'Choose an imputation method for {column}', imputation_methods)
-                    if method == 'Remove rows with missing values':
-                        temp_data = temp_data.dropna()
-                        data = data.dropna()
-        
-                    elif method == 'Mean for numerical, Mode for categorical':
-                        if data[column].dtype == 'object':
-                            temp_data[column].fillna(data[column].mode()[0], inplace=True)
-                        else:
-                            temp_data[column].fillna(data[column].mean(), inplace=True)
-        
-                    elif method == 'Zero imputation':
-                        temp_data[column].fillna(0, inplace=True)
-        
-                    elif method == 'Iterative (multivariate) imputation':
-                        imp = IterativeImputer(max_iter=10, random_state=0)
-                        temp_data[column] = imp.fit_transform(data[[column]])
-        
-                    elif method == 'Most frequent/constant':
-                        temp_data[column].fillna(data[column].value_counts().index[0], inplace=True)
-        
-                    data[column] = temp_data[column]  # update only the specific column
-        
-                    st.subheader('Imputed data')
-                    st.write(data)            
-          #  del temp_data
-            ##################################################################
-
-            numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
-            st.write('---------------------------------------------')
-            st.header('Normalization')
-            st.write('---------------------------------------------')
-            selected_columns1 = st.multiselect("Please choose the variables from normalization", numeric_columns)
-            selected_data = data[selected_columns1].values  # Extract the selected data as a NumPy array
-            normalized_data = normalize(selected_data)  # Apply normalization to the selected data
-            data[selected_columns1] = normalized_data  # Update the DataFrame with the normalized values
-            st.write(data.head())
-            st.write('---------------------------------------------')
-            st.header('Standardization')
-            st.write('---------------------------------------------')
-
-            selected_columns1 = st.multiselect("Select independent variables for standardization", numeric_columns)
-            if selected_columns1:  # Check if any variables were selected
-                selected_data = data[selected_columns1]  # Extract the selected data as a DataFrame
-                standardized_data = standardize(selected_data)  # Apply standardization to the selected data
-                data[selected_columns1] = standardized_data  # Update the DataFrame with the standardized values
-                st.write(data.head())
-            else:
-                st.warning("No independent variable selected")
-
-            st.write("Note:  Normalization should be used when we hae different units across variables.")
-            st.write("Note:  Standardization is a common preprocessing technique used in machine learning and data analysis that modifies numerical features so they have a mean of 0 and standard deviation of 1.")
-            st.write('---------------------------------------------')
-            st.header('Outliers index based on IQR method')
-            st.write('---------------------------------------------')
-
-            outliers_count, outliers_indices = detect_outliers(data[numeric_columns])
-            st.write('Count of outliers in each selected column:')
-            st.write(outliers_count)
-            st.write('Indices of outliers in each selected column:')
-            st.write(outliers_indices)
-            st.write('---------------------------------------------')
-            st.header('One Hot Encoding & Label Encoding')
-            st.write('---------------------------------------------')
-            
-            one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
-            label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
-            
-            if one_hot_cols:
-                # Perform One-Hot Encoding:
-                data = pd.get_dummies(data, columns=one_hot_cols)
-                st.write('Data after one-hot encoding:')
-                st.dataframe(data)
-            
-            if label_cols:
-                # Create a label encoder object for Label Encoding
-                le = LabelEncoder()
-            
-                for col in label_cols:
-                    # Fit and transform the selected columns
-                    data[col] = le.fit_transform(data[col])
-                st.write('Data after label encoding:')
-                st.dataframe(data)
-
-
-  ##############################################################
-            #st.dataframe(data)  # Use dataframe() to make it more pretty
-            st.write('---------------------------------------------')
-            st.header('Column creation based on existing variables')
-            st.write('---------------------------------------------')
-            st.write('You can create new variable based on the mathematical operations from pervious variables')
-            st.write('It supports ADDITION, SUBSTRACTION, DIVIDE, MULTIPLICATION, EXPONENTIAL, EXP/LOG, ABSOLUTE, TRANOMETRIC FUNCTIONS AND CONDITIONS')
-            st.write('E.g.New variable can be created from equations like this')
-            st.markdown("if equation is: $new\_variable = 3 \cdot var1 + var2^2$")
-            st.write("You can write this in formula 3* var1 + var2**2")
-            # Input for new variable
-            new_var = st.text_input('Enter new variable name')
+            if st.session_state["data"] is not None:
+                st.header("Welcome to preprocessing tab")
+                st.write("Data Shape")
+                st.write(data.shape)
+                st.write('---------------------------------------------')
+                st.header('Missing Values imputation')
+                st.write('---------------------------------------------')
     
-            # Input for formula
-            formula = st.text_input('Enter formula for new variable (use var names from the data)')
-    
-            if new_var and formula:  # Only try to create the column if the variable name and formula are provided
-                try:
-                    # Calculate the new variable
-                    data[new_var] = data.eval(formula)
-                    st.dataframe(data)  # Use dataframe() to make it more pretty
-                except KeyError as e:
-                    st.write(f'Invalid variable in formula: {str(e)}')
-                except Exception as e:
-                    st.write(f'Error occurred: {str(e)}')
-      
-        
-    ##############################################################
-            st.write('---------------------------------------------')
-            st.header('Outlier Detection & Removal')
-            st.write('---------------------------------------------')
-
-            # st.header("Outlier Detection & Removal")
-            st.write("The following buttons will detect the outliers with the mentioned method and also remove it from the data.")
-            col1, col2, col3 = st.columns(3)
-        
-            with col1:
-                if st.button('Z-Score Method'):
-                    cleaned_data = z_score_method(data)
-                    rows_before = data.shape[0]
-                    rows_after = cleaned_data.shape[0]
-                    rows_removed = rows_before - rows_after
-                    data = cleaned_data
-                    st.write(data)
-                    st.write('Rows before cleaning: ', rows_before)
-                    st.write('Rows after cleaning: ', rows_after)
-                    st.write('Rows removed during cleaning: ', rows_removed)
-
-        
-            with col2:
-                if st.button('IQR Method'):
-                    cleaned_data = iqr_method(data)
-                    rows_before = data.shape[0]
-                    rows_after = cleaned_data.shape[0]
-                    rows_removed = rows_before - rows_after
-                    data = cleaned_data
-                    st.write(data)
-                    st.write('Rows before cleaning: ', rows_before)
-                    st.write('Rows after cleaning: ', rows_after)
-                    st.write('Rows removed during cleaning: ', rows_removed)
-
-            with col3:
-                if st.button('Isolation Forest'):
-                    cleaned_data = isolation_forest(data)
-                    rows_before = data.shape[0]
-                    rows_after = cleaned_data.shape[0]
-                    rows_removed = rows_before - rows_after
-                    data = cleaned_data
-                    st.write(data)
-                    st.write('Rows before cleaning: ', rows_before)
-                    st.write('Rows after cleaning: ', rows_after)
-                    st.write('Rows removed during cleaning: ', rows_removed)
-        
-            col4, col5, col7 = st.columns(3)
-        
-            with col4:
-                if st.button('Local Outlier Factor'):
-                    cleaned_data = lof_method(data)
-                    rows_before = data.shape[0]
-                    rows_after = cleaned_data.shape[0]
-                    rows_removed = rows_before - rows_after
-                    data = cleaned_data
-                    st.write(data)
-                    st.write('Rows before cleaning: ', rows_before)
-                    st.write('Rows after cleaning: ', rows_after)
-                    st.write('Rows removed during cleaning: ', rows_removed)
-        
-            with col5:
-                if st.button('DBSCAN Clustering'):
-                    cleaned_data = dbscan_method(data)
-                    rows_before = data.shape[0]
-                    rows_after = cleaned_data.shape[0]
-                    rows_removed = rows_before - rows_after
-                    data = cleaned_data
-                    st.write(data)
-                    st.write('Rows before cleaning: ', rows_before)
-                    st.write('Rows after cleaning: ', rows_after)
-                    st.write('Rows removed during cleaning: ', rows_removed)
-        
-
-            with col7:
-                if st.button('Reset to Orignal Data'):
-                     data = data
-                     st.write(data.head())
-                     st.write('Shape of Data: ', data.shape)
-                     
-            st.header("Recoding variables-cat to numeric")
-                     
-            #########################################################################
-        # Create multiselect menu for categorical columns
-            # categorical_cols = st.multiselect("Select the categorical columns you want to encode", data.columns)
-        
-            # if categorical_cols:
-        
-            #     if st.button('One-Hot Encoding'):
-            #         # Perform One-Hot Encoding:
-            #         data = pd.get_dummies(data, columns=categorical_cols)
-            #         st.write('Data after one-hot encoding:')
-            #         st.write(data)
-        
-            #     if st.button('Label Encoding'):
-            #         # Create a label encoder object for Label Encoding
-            #         le = LabelEncoder()
-        
-            #         for col in categorical_cols:
-            #             # Fit and transform the selected columns
-            #             data[col] = le.fit_transform(data[col])
+                st.subheader('Raw data')
+                st.write(data)
+            
+                imputation_methods = ['Remove rows with missing values',
+                                      'Mean for numerical, Mode for categorical',
+                                      'Zero imputation',
+                                      'Iterative (multivariate) imputation',
+                                      'Most frequent/constant']
+            
+                # Show only those variables that have missing values
+                missing_cols = data.columns[data.isna().any()].tolist()
+                if not missing_cols:
+                    st.write("No columns with missing values in the uploaded file")
+                else:
+                    st.subheader('Columns with missing values')
+                    st.write(missing_cols)
+            
+                    # Choose column for imputation
+                    selected_columns = st.multiselect('Choose columns for imputation', missing_cols)
+            
                     
-            #         st.write('Data after label encoding:')
-            #         st.write(data)
-            # else:
-            #     st.write("No categorical column selected!")
+                    for column in selected_columns:
+                        temp_data = data.copy()  # reset to original data each time
             
-
-            #########################################################################
-            data.to_csv('preprocessed_data.csv', index=False)
-            csv = data.to_csv(index=False)
-            b64 = base64.b64encode(csv.encode()).decode()
-            href = f'<a href="data:file/csv;base64,{b64}">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
-            st.markdown(href, unsafe_allow_html=True)
+                        method = st.selectbox(f'Choose an imputation method for {column}', imputation_methods)
+                        if method == 'Remove rows with missing values':
+                            temp_data = temp_data.dropna()
+                            data = data.dropna()
+            
+                        elif method == 'Mean for numerical, Mode for categorical':
+                            if data[column].dtype == 'object':
+                                temp_data[column].fillna(data[column].mode()[0], inplace=True)
+                            else:
+                                temp_data[column].fillna(data[column].mean(), inplace=True)
+            
+                        elif method == 'Zero imputation':
+                            temp_data[column].fillna(0, inplace=True)
+            
+                        elif method == 'Iterative (multivariate) imputation':
+                            imp = IterativeImputer(max_iter=10, random_state=0)
+                            temp_data[column] = imp.fit_transform(data[[column]])
+            
+                        elif method == 'Most frequent/constant':
+                            temp_data[column].fillna(data[column].value_counts().index[0], inplace=True)
+            
+                        data[column] = temp_data[column]  # update only the specific column
+            
+                        st.subheader('Imputed data')
+                        st.write(data)            
+              #  del temp_data
+                ##################################################################
+    
+                numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
+                st.write('---------------------------------------------')
+                st.header('Normalization')
+                st.write('---------------------------------------------')
+                selected_columns1 = st.multiselect("Please choose the variables from normalization", numeric_columns)
+                selected_data = data[selected_columns1].values  # Extract the selected data as a NumPy array
+                normalized_data = normalize(selected_data)  # Apply normalization to the selected data
+                data[selected_columns1] = normalized_data  # Update the DataFrame with the normalized values
+                st.write(data.head())
+                st.write('---------------------------------------------')
+                st.header('Standardization')
+                st.write('---------------------------------------------')
+    
+                selected_columns1 = st.multiselect("Select independent variables for standardization", numeric_columns)
+                if selected_columns1:  # Check if any variables were selected
+                    selected_data = data[selected_columns1]  # Extract the selected data as a DataFrame
+                    standardized_data = standardize(selected_data)  # Apply standardization to the selected data
+                    data[selected_columns1] = standardized_data  # Update the DataFrame with the standardized values
+                    st.write(data.head())
+                else:
+                    st.warning("No independent variable selected")
+    
+                st.write("Note:  Normalization should be used when we hae different units across variables.")
+                st.write("Note:  Standardization is a common preprocessing technique used in machine learning and data analysis that modifies numerical features so they have a mean of 0 and standard deviation of 1.")
+                st.write('---------------------------------------------')
+                st.header('Outliers index based on IQR method')
+                st.write('---------------------------------------------')
+    
+                outliers_count, outliers_indices = detect_outliers(data[numeric_columns])
+                st.write('Count of outliers in each selected column:')
+                st.write(outliers_count)
+                st.write('Indices of outliers in each selected column:')
+                st.write(outliers_indices)
+                st.write('---------------------------------------------')
+                st.header('One Hot Encoding & Label Encoding')
+                st.write('---------------------------------------------')
+                
+                one_hot_cols = st.multiselect("Select the categorical columns you want to one-hot encode", data.columns)
+                label_cols = st.multiselect("Select the categorical columns you want to label encode", data.columns)
+                
+                if one_hot_cols:
+                    # Perform One-Hot Encoding:
+                    data = pd.get_dummies(data, columns=one_hot_cols)
+                    st.write('Data after one-hot encoding:')
+                    st.write(data)
+                
+                if label_cols:
+                    # Create a label encoder object for Label Encoding
+                    le = LabelEncoder()
+                
+                    for col in label_cols:
+                        # Fit and transform the selected columns
+                        data[col] = le.fit_transform(data[col])
+                    st.write('Data after label encoding:')
+                    st.write(data)
+    
+    
+      ##############################################################
+                st.dataframe(data)  # Use dataframe() to make it more pretty
+                st.write('---------------------------------------------')
+                st.header('Column creation based on existing variables')
+                st.write('---------------------------------------------')
+                st.write('You can create new variable based on the mathematical operations from pervious variables')
+                st.write('It supports ADDITION, SUBSTRACTION, DIVIDE, MULTIPLICATION, EXPONENTIAL, EXP/LOG, ABSOLUTE, TRANOMETRIC FUNCTIONS AND CONDITIONS')
+                st.write('E.g.New variable can be created from equations like this')
+                st.markdown("if equation is: $new\_variable = 3 \cdot var1 + var2^2$")
+                st.write("You can write this in formula 3* var1 + var2**2")
+                # Input for new variable
+                new_var = st.text_input('Enter new variable name')
+        
+                # Input for formula
+                formula = st.text_input('Enter formula for new variable (use var names from the data)')
+        
+                if new_var and formula:  # Only try to create the column if the variable name and formula are provided
+                    try:
+                        # Calculate the new variable
+                        data[new_var] = data.eval(formula)
+                        st.dataframe(data)  # Use dataframe() to make it more pretty
+                    except KeyError as e:
+                        st.write(f'Invalid variable in formula: {str(e)}')
+                    except Exception as e:
+                        st.write(f'Error occurred: {str(e)}')
+          
+            
+        ##############################################################
+                st.write('---------------------------------------------')
+                st.header('Outlier Detection & Removal')
+                st.write('---------------------------------------------')
+    
+                # st.header("Outlier Detection & Removal")
+                st.write("The following buttons will detect the outliers with the mentioned method and also remove it from the data.")
+                col1, col2, col3 = st.columns(3)
+            
+                with col1:
+                    if st.button('Z-Score Method'):
+                        cleaned_data = z_score_method(data)
+                        rows_before = data.shape[0]
+                        rows_after = cleaned_data.shape[0]
+                        rows_removed = rows_before - rows_after
+                        data = cleaned_data
+                        st.write(data)
+                        st.write('Rows before cleaning: ', rows_before)
+                        st.write('Rows after cleaning: ', rows_after)
+                        st.write('Rows removed during cleaning: ', rows_removed)
+    
+            
+                with col2:
+                    if st.button('IQR Method'):
+                        cleaned_data = iqr_method(data)
+                        rows_before = data.shape[0]
+                        rows_after = cleaned_data.shape[0]
+                        rows_removed = rows_before - rows_after
+                        data = cleaned_data
+                        st.write(data)
+                        st.write('Rows before cleaning: ', rows_before)
+                        st.write('Rows after cleaning: ', rows_after)
+                        st.write('Rows removed during cleaning: ', rows_removed)
+    
+                with col3:
+                    if st.button('Isolation Forest'):
+                        cleaned_data = isolation_forest(data)
+                        rows_before = data.shape[0]
+                        rows_after = cleaned_data.shape[0]
+                        rows_removed = rows_before - rows_after
+                        data = cleaned_data
+                        st.write(data)
+                        st.write('Rows before cleaning: ', rows_before)
+                        st.write('Rows after cleaning: ', rows_after)
+                        st.write('Rows removed during cleaning: ', rows_removed)
+            
+                col4, col5, col7 = st.columns(3)
+            
+                with col4:
+                    if st.button('Local Outlier Factor'):
+                        cleaned_data = lof_method(data)
+                        rows_before = data.shape[0]
+                        rows_after = cleaned_data.shape[0]
+                        rows_removed = rows_before - rows_after
+                        data = cleaned_data
+                        st.write(data)
+                        st.write('Rows before cleaning: ', rows_before)
+                        st.write('Rows after cleaning: ', rows_after)
+                        st.write('Rows removed during cleaning: ', rows_removed)
+            
+                with col5:
+                    if st.button('DBSCAN Clustering'):
+                        cleaned_data = dbscan_method(data)
+                        rows_before = data.shape[0]
+                        rows_after = cleaned_data.shape[0]
+                        rows_removed = rows_before - rows_after
+                        data = cleaned_data
+                        st.write(data)
+                        st.write('Rows before cleaning: ', rows_before)
+                        st.write('Rows after cleaning: ', rows_after)
+                        st.write('Rows removed during cleaning: ', rows_removed)
+            
+    
+                with col7:
+                    if st.button('Reset to Orignal Data'):
+                         data = data
+                         st.write(data.head())
+                         st.write('Shape of Data: ', data.shape)
+                         
+                st.header("Recoding variables-cat to numeric")
+                         
+                #########################################################################
+            # Create multiselect menu for categorical columns
+                # categorical_cols = st.multiselect("Select the categorical columns you want to encode", data.columns)
+            
+                # if categorical_cols:
+            
+                #     if st.button('One-Hot Encoding'):
+                #         # Perform One-Hot Encoding:
+                #         data = pd.get_dummies(data, columns=categorical_cols)
+                #         st.write('Data after one-hot encoding:')
+                #         st.write(data)
+            
+                #     if st.button('Label Encoding'):
+                #         # Create a label encoder object for Label Encoding
+                #         le = LabelEncoder()
+            
+                #         for col in categorical_cols:
+                #             # Fit and transform the selected columns
+                #             data[col] = le.fit_transform(data[col])
+                        
+                #         st.write('Data after label encoding:')
+                #         st.write(data)
+                # else:
+                #     st.write("No categorical column selected!")
+                
+    
+                #########################################################################
+                data.to_csv('preprocessed_data.csv', index=False)
+                csv = data.to_csv(index=False)
+                b64 = base64.b64encode(csv.encode()).decode()
+                href = f'<a href="data:file/csv;base64,{b64}">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
+                st.markdown(href, unsafe_allow_html=True)
+                st.session_state["preprocessed_data"] = data  # Store the preprocessed data in the session state
+            else:
+                st.warning('Please upload a file first.')    
             
 
  #           ###########################
@@ -549,257 +559,260 @@ def main():
             
             
         if task == "Machine Learning Models":
-            # Load your preprocessed data from the CSV file
-            try:
-                data = pd.read_csv('preprocessed_data.csv')
-            except FileNotFoundError:
-                st.warning("Please run preprocessing before training the model!")
-                return
-                   
-            st.header("Machine Learning")
-            st.write("Data Shape")
-            st.write(data.shape)
-            model_name = st.sidebar.selectbox("Select Model", ["Linear Regression", "KNN Regression", "Decision Tree Regression", "Random Forest Regression", "SVM Regressor",  "KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "Logistic Regression Classifier","SVM Classifier"])
-            target = st.selectbox("Select the target variable", data.columns)
-            selected_columns1 = st.multiselect("Select independent variables",data.columns)
-            if not selected_columns1:
-                st.info("Please select at least one variable.")
-                return
-
-            x = data[selected_columns1] #data.drop(target, axis=1)
-            y = data[target]
-            split_ratio = st.number_input('Enter a test/train split ratio', min_value=0.1, max_value=0.9, value=0.2, step=0.1)
-            X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio, random_state=42)
-
-            if model_name == "Linear Regression":
-                model = LinearRegression()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                evaluate_regression(y_test, y_pred)
-                b0 = model.intercept_
-                b1 = model.coef_
-                equation = "y = {:.2f} ".format(b0)
-                for i, coef in enumerate(b1):
-                    equation += "+ {:.2f}*{} ".format(coef, selected_columns1[i])
-                st.write("Linear Regression Model Equation: ", equation)
+             if st.session_state["preprocessed_data"] is not None:
+                data = st.session_state["preprocessed_data"]
+                # Load your preprocessed data from the CSV file
+                try:
+                    data = pd.read_csv('preprocessed_data.csv')
+                except FileNotFoundError:
+                    st.warning("Please run preprocessing before training the model!")
+                    return
+                       
+                st.header("Machine Learning")
+                st.write("Data Shape")
+                st.write(data.shape)
+                model_name = st.sidebar.selectbox("Select Model", ["Linear Regression", "KNN Regression", "Decision Tree Regression", "Random Forest Regression", "SVM Regressor",  "KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "Logistic Regression Classifier","SVM Classifier"])
+                target = st.selectbox("Select the target variable", data.columns)
+                selected_columns1 = st.multiselect("Select independent variables",data.columns)
+                if not selected_columns1:
+                    st.info("Please select at least one variable.")
+                    return
+    
+                x = data[selected_columns1] #data.drop(target, axis=1)
+                y = data[target]
+                split_ratio = st.number_input('Enter a test/train split ratio', min_value=0.1, max_value=0.9, value=0.2, step=0.1)
+                X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio, random_state=42)
+    
+                if model_name == "Linear Regression":
+                    model = LinearRegression()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    evaluate_regression(y_test, y_pred)
+                    b0 = model.intercept_
+                    b1 = model.coef_
+                    equation = "y = {:.2f} ".format(b0)
+                    for i, coef in enumerate(b1):
+                        equation += "+ {:.2f}*{} ".format(coef, selected_columns1[i])
+                    st.write("Linear Regression Model Equation: ", equation)
+                    
+                    X_train_with_intercept = sm.add_constant(X_train)  # Add constant term to the features
+                    model_sm = sm.OLS(y_train, X_train_with_intercept)  # Create a statsmodels OLS model
+                    results = model_sm.fit()  # Fit the model
+                    st.write("Regression Results:")
+                    st.write(results.summary())
+                    #########################################################################
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
                 
-                X_train_with_intercept = sm.add_constant(X_train)  # Add constant term to the features
-                model_sm = sm.OLS(y_train, X_train_with_intercept)  # Create a statsmodels OLS model
-                results = model_sm.fit()  # Fit the model
-                st.write("Regression Results:")
-                st.write(results.summary())
-                #########################################################################
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Plotting residuals
-                residuals = y_test - y_pred
-                fig, ax = plt.subplots()
-                sns.distplot(residuals)
-                plt.xlabel('Residuals')
-                st.pyplot(fig)
-                #########################################################################
-            elif model_name == "SVM Regressor":
+                    # Plotting residuals
+                    residuals = y_test - y_pred
+                    fig, ax = plt.subplots()
+                    sns.distplot(residuals)
+                    plt.xlabel('Residuals')
+                    st.pyplot(fig)
+                    #########################################################################
+                elif model_name == "SVM Regressor":
+                    
+                    model = SVR(kernel='rbf')
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    evaluate_regression(y_test, y_pred)
                 
-                model = SVR(kernel='rbf')
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                evaluate_regression(y_test, y_pred)
-            
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Plotting residuals
-                residuals = y_test - y_pred
-                fig, ax = plt.subplots()
-                sns.distplot(residuals)
-                plt.xlabel('Residuals')
-                st.pyplot(fig)
-
-            
-            elif model_name == "KNN Regression":
-                model = KNeighborsRegressor()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                evaluate_regression(y_test, y_pred)
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
                 
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Plotting residuals
-                residuals = y_test - y_pred
-                fig, ax = plt.subplots()
-                sns.distplot(residuals)
-                plt.xlabel('Residuals')
-                st.pyplot(fig)
-            
-            # Note that in KNN Regression, we don't have the model equation and OLS regression results. 
-            # KNN is a non-parametric model and doesn't provide coefficients like a linear regression model. 
-            
-            elif model_name == "Decision Tree Regression":
-                model = DecisionTreeRegressor(random_state=42)
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                evaluate_regression(y_test, y_pred)
-            
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Plotting residuals
-                residuals = y_test - y_pred
-                fig, ax = plt.subplots()
-                sns.distplot(residuals)
-                plt.xlabel('Residuals')
-                st.pyplot(fig)
-
-                # Just as with KNN, we don't have the model equation and OLS regression results. 
-                # Decision Tree is also a non-parametric model and doesn't provide coefficients like a linear regression model.
-            
-            elif model_name == "Random Forest Regression":
-                model = RandomForestRegressor(random_state=42)
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                evaluate_regression(y_test, y_pred)
-            
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Plotting residuals
-                residuals = y_test - y_pred
-                fig, ax = plt.subplots()
-                sns.distplot(residuals)
-                plt.xlabel('Residuals')
-                st.pyplot(fig)
-
+                    # Plotting residuals
+                    residuals = y_test - y_pred
+                    fig, ax = plt.subplots()
+                    sns.distplot(residuals)
+                    plt.xlabel('Residuals')
+                    st.pyplot(fig)
+    
                 
-            elif model_name == "KNN Classifier":
-                model = KNeighborsClassifier()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-
-                # Confusion matrix
-                cm = metrics.confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
-                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
-                st.pyplot(fig)
-                report = classification_report(y_test, y_pred, target_names=model.classes_)
-                st.text(report)
-
-            elif model_name == "Decision Tree Classifier":
-                model = DecisionTreeClassifier()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Confusion matrix
-                cm = metrics.confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
-                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
-                st.pyplot(fig)
-                report = classification_report(y_test, y_pred, target_names=model.classes_)
-                st.text(report)
-
-            elif model_name == "Random Forest Classifier":
-                model = RandomForestClassifier()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Confusion matrix
-                cm = metrics.confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
-                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
-                st.pyplot(fig)
-                report = classification_report(y_test, y_pred, target_names=model.classes_)
-                st.text(report)
-
-            elif model_name == "Logistic Regression Classifier":
-                model = LogisticRegression()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Confusion matrix
-                cm = metrics.confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
-                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
-                st.pyplot(fig)
-                report = classification_report(y_test, y_pred, target_names=model.classes_)
-                st.text(report)
+                elif model_name == "KNN Regression":
+                    model = KNeighborsRegressor()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    evaluate_regression(y_test, y_pred)
+                    
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
                 
-            elif model_name == "SVM Classifier":
-                from sklearn.svm import SVC
-                model = SVC()
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    # Plotting residuals
+                    residuals = y_test - y_pred
+                    fig, ax = plt.subplots()
+                    sns.distplot(residuals)
+                    plt.xlabel('Residuals')
+                    st.pyplot(fig)
                 
-                # Plotting predicted vs actual values
-                fig, ax = plt.subplots()
-                sns.scatterplot(x=y_test, y=y_pred)
-                plt.xlabel('Actual Values')
-                plt.ylabel('Predicted Values')
-                st.pyplot(fig)
-            
-                # Confusion matrix
-                cm = metrics.confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots()
-                sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
-                ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
-                st.pyplot(fig)
-                report = classification_report(y_test, y_pred, target_names=model.classes_)
-                st.text(report)
-
+                # Note that in KNN Regression, we don't have the model equation and OLS regression results. 
+                # KNN is a non-parametric model and doesn't provide coefficients like a linear regression model. 
+                
+                elif model_name == "Decision Tree Regression":
+                    model = DecisionTreeRegressor(random_state=42)
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    evaluate_regression(y_test, y_pred)
+                
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Plotting residuals
+                    residuals = y_test - y_pred
+                    fig, ax = plt.subplots()
+                    sns.distplot(residuals)
+                    plt.xlabel('Residuals')
+                    st.pyplot(fig)
+    
+                    # Just as with KNN, we don't have the model equation and OLS regression results. 
+                    # Decision Tree is also a non-parametric model and doesn't provide coefficients like a linear regression model.
+                
+                elif model_name == "Random Forest Regression":
+                    model = RandomForestRegressor(random_state=42)
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    evaluate_regression(y_test, y_pred)
+                
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Plotting residuals
+                    residuals = y_test - y_pred
+                    fig, ax = plt.subplots()
+                    sns.distplot(residuals)
+                    plt.xlabel('Residuals')
+                    st.pyplot(fig)
+    
+                    
+                elif model_name == "KNN Classifier":
+                    model = KNeighborsClassifier()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+    
+                    # Confusion matrix
+                    cm = metrics.confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                    ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                    st.pyplot(fig)
+                    report = classification_report(y_test, y_pred, target_names=model.classes_)
+                    st.text(report)
+    
+                elif model_name == "Decision Tree Classifier":
+                    model = DecisionTreeClassifier()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Confusion matrix
+                    cm = metrics.confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                    ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                    st.pyplot(fig)
+                    report = classification_report(y_test, y_pred, target_names=model.classes_)
+                    st.text(report)
+    
+                elif model_name == "Random Forest Classifier":
+                    model = RandomForestClassifier()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Confusion matrix
+                    cm = metrics.confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                    ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                    st.pyplot(fig)
+                    report = classification_report(y_test, y_pred, target_names=model.classes_)
+                    st.text(report)
+    
+                elif model_name == "Logistic Regression Classifier":
+                    model = LogisticRegression()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Confusion matrix
+                    cm = metrics.confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                    ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                    st.pyplot(fig)
+                    report = classification_report(y_test, y_pred, target_names=model.classes_)
+                    st.text(report)
+                    
+                elif model_name == "SVM Classifier":
+                    from sklearn.svm import SVC
+                    model = SVC()
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    st.write("Accuracy: ", metrics.accuracy_score(y_test, y_pred)*100, "%")
+                    
+                    # Plotting predicted vs actual values
+                    fig, ax = plt.subplots()
+                    sns.scatterplot(x=y_test, y=y_pred)
+                    plt.xlabel('Actual Values')
+                    plt.ylabel('Predicted Values')
+                    st.pyplot(fig)
+                
+                    # Confusion matrix
+                    cm = metrics.confusion_matrix(y_test, y_pred)
+                    fig, ax = plt.subplots()
+                    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues', cbar=False)
+                    ax.set(xlabel="Predicted", ylabel="Actual", xticklabels=model.classes_, yticklabels=model.classes_, title="Confusion Matrix")
+                    st.pyplot(fig)
+                    report = classification_report(y_test, y_pred, target_names=model.classes_)
+                    st.text(report)
+             else:
+                    st.warning("Please run preprocessing before training the model!")
         if task == 'About Me':
             st.subheader("Data Scientist behind the app")
             st.write("Hello everyone, this app is created and managed by Sajid Hafeez, Data scientist at Rprogrammers.com.")
