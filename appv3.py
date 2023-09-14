@@ -39,6 +39,33 @@ from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 # import base64
+# # Your function to evaluate regression (since it's not in your snippet)
+# def evaluate_regression(y_test, y_pred):
+#     st.write("Your evaluation code here")
+
+# # HTML and CSS for the futuristic progress bar
+# progress_bar_css = """
+# <style>
+#   #myBar {
+#     animation: lightning 1.5s infinite linear;
+#   }
+#   @keyframes lightning {
+#     0% { background-position: 0 0; }
+#     100% { background-position: 50px 50px; }
+#   }
+# </style>
+# """
+# progress_bar_html = """
+# <div style="width: 100%; background-color: #ddd;">
+#   <div id="myBar" style="width: 0%; height: 30px; background: repeating-linear-gradient(
+#         45deg,
+#         red,
+#         red 10px,
+#         black 10px,
+#         black 20px
+#     ); text-align: center;">0%</div>
+# </div>
+# """
 
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as image_file:
@@ -168,6 +195,11 @@ def standardize(variables):
     standardized_vars = scaler.fit_transform(variables)
     
     return standardized_vars
+import base64
+
+def image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
 
 
 def main():
@@ -183,7 +215,6 @@ def main():
     file = st.file_uploader("Upload your dataset", type=['csv', 'txt', 'json', 'xlsx', 'xls'])
     if file is not None:
         file_details = {"FileName":file.name,"FileType":file.type,"FileSize":file.size}
-        st.write(file_details)
         
         if file_details["FileType"] == "text/csv":
             data = pd.read_csv(file)
@@ -202,7 +233,7 @@ def main():
         if task == "EDA":
             st.header("Welcome to the Future of Predictive Analytics! 🚀.")
             st.write("In the constantly evolving digital world, the true power lies within data. It shapes strategies, inspires innovations, and propels businesses to greater heights. But unlocking the full potential of data can be a daunting task. That's where we come in! I am thrilled to welcome you to our revolutionary web application, designed to simplify and amplify the way you work with data. Whether you're a data science expert or just getting started, our application is your gateway to the exciting world of machine learning.The best part? It's absolutely FREE to use! Load your data, effortlessly preprocess it, implement a wide array of supervised machine learning models, and instantly visualize the results. Our user-friendly interface transforms complex data operations into a few clicks, making data more accessible than ever before. It's a tool built to empower you, to transform your decisions with the power of predictive analytics. Beyond this dynamic tool, we offer expert freelance data science services. With extensive experience in Python and R programming, we're here to support you through your data journey, from start to finish. From guidance on intricate data projects to hands-on coding assistance, consider us your go-to resource. So, why wait? Experience the power of data at your fingertips. Dive into the world of insights and predictive power right now! Remember, no matter where you are on your data journey, we're here to help you make the most of it. Don't just predict the future, define it with data. For more information, feel free to contact us. We look forward to embarking on this exciting journey with you! Let's turn data into decisions. Welcome to the future of predictive analytics! 🌐")
-   
+            st.write(file_details)
             st.write("First five data rows")
             st.write(data.head())
             st.write("Missing values table")
@@ -584,10 +615,74 @@ def main():
                 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=split_ratio, random_state=42)
     
                 if model_name == "Linear Regression":
+                    # Reserve a slot for the progress bar
+                    placeholder = st.empty()
+
+                    # Insert your custom progress bar
+                    progress_bar_html = """
+                    <div style="width: 100%; background-color: #ddd;">
+                    <div id="myBar" style="width: 0%; height: 30px; background: repeating-linear-gradient(
+                            45deg,
+                            red,
+                            red 10px,
+                            black 10px,
+                            black 20px
+                        ); text-align: center;">0%</div>
+                    </div>
+                    """
+
+                    # CSS code for animation
+                    progress_bar_css = """
+                    <style>
+                    #myBar {
+                        animation: lightning 1.5s infinite linear;
+                    }
+                    @keyframes lightning {
+                        0% { background-position: 0 0; }
+                        100% { background-position: 50px 50px; }
+                    }
+                    </style>
+                    """
+
+                    # Note the use of placeholder to write to the reserved slot
+                    placeholder.markdown(progress_bar_css, unsafe_allow_html=True)
+                    placeholder.markdown(progress_bar_html, unsafe_allow_html=True)
+
+                    # Initialize the progress bar
+                    progress = 0
+
+                    # Update the progress bar
+                    def update_progress(new_val):
+                        update_script = f"""
+                        <script>
+                            var elem = document.getElementById("myBar");
+                            elem.style.width = "{new_val}%";
+                            elem.innerHTML = "{new_val}%";
+                        </script>
+                        """
+                        placeholder.markdown(update_script, unsafe_allow_html=True)
+
+                    # Update progress to 10%
+                    update_progress(10)
+
+                    # Fit the model
                     model = LinearRegression()
                     model.fit(X_train, y_train)
+                    
+                    # Update progress to 50%
+                    update_progress(50)
+
+                    # Make predictions
                     y_pred = model.predict(X_test)
+                    
+                    # Update progress to 70%
+                    update_progress(70)
+
+                    # Evaluate the model
                     evaluate_regression(y_test, y_pred)
+                    
+                    # Update progress to 90%
+                    update_progress(90)
                     b0 = model.intercept_
                     b1 = model.coef_
                     equation = "y = {:.2f} ".format(b0)
@@ -614,6 +709,7 @@ def main():
                     sns.distplot(residuals)
                     plt.xlabel('Residuals')
                     st.pyplot(fig)
+                    update_progress(100)
                     #########################################################################
                 elif model_name == "SVM Regressor":
                     
@@ -813,14 +909,50 @@ def main():
                     st.text(report)
              else:
                     st.warning("Please run preprocessing before training the model!")
+########################################################################################################################################################
+# About Me
+#######################################################################################################################################################        
+
+
+        # Function to convert image to base64
+        def image_to_base64(image_path):
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode()
+
+        task = 'About Me'  # Replace with your task logic
+
         if task == 'About Me':
-            st.subheader("Data Scientist behind the app")
-            st.write("Hello everyone, this app is created and managed by Sajid Hafeez, Data scientist at Rprogrammers.com.")
-            st.write("I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following emails.")
-            st.write("Email: Sajidhafeex@gmail.com")
-            st.write("LinkedIn: https://www.linkedin.com/in/sajid-hafeex")
-            st.write("Rprogrammers.com")
-            
+            st.markdown(
+                "<h2 style='font-family:Times New Roman, Times, serif; font-style:italic;'>Data Scientist behind the app</h2>",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                "<div style='font-family:Times New Roman, Times, serif; font-style:italic;'>"
+                "Hello everyone, this app is created and managed by Sajid Hafeez, Data scientist at Rprogrammers.com.<br>"
+                "I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following."
+                "</div>",
+                unsafe_allow_html=True,
+            )
+
+            col1, col2 = st.columns(2)
+
+            email_logo_base64 = image_to_base64("email.png")
+            linkedin_logo_base64 = image_to_base64("whats.png")
+            website_logo_base64 = image_to_base64("web.png")
+
+            col1.markdown(
+                f"""
+                <div style='font-family:Times New Roman, Times, serif; font-style:italic;'>
+                    <p><img src='data:image/png;base64,{email_logo_base64}' style='width:20px; vertical-align:middle;'/> Email: <a href='mailto:Sajidhafeex@gmail.com'>Sajidhafeex@gmail.com</a></p>
+                    <p><img src='data:image/png;base64,{linkedin_logo_base64}' style='width:20px; vertical-align:middle;'/> LinkedIn: <a href='https://www.linkedin.com/in/sajid-hafeex'>https://www.linkedin.com/in/sajid-hafeex</a></p>
+                    <p><img src='data:image/png;base64,{website_logo_base64}' style='width:20px; vertical-align:middle;'/> Website: <a href='https://Rprogrammers.com'>https://Rprogrammers.com</a></p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            col2.image("giphy.gif")
 
 if __name__ == '__main__':
     main()
