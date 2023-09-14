@@ -919,7 +919,7 @@ def main():
             with open(image_path, "rb") as image_file:
                 return base64.b64encode(image_file.read()).decode()
 
-        task = 'About Me'  # Replace with your task logic
+        #task = 'About Me'  # Replace with your task logic
 
         if task == 'About Me':
             st.markdown(
