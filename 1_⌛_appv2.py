@@ -38,34 +38,12 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
-# import base64
-# # Your function to evaluate regression (since it's not in your snippet)
-# def evaluate_regression(y_test, y_pred):
-#     st.write("Your evaluation code here")
-
-# # HTML and CSS for the futuristic progress bar
-# progress_bar_css = """
-# <style>
-#   #myBar {
-#     animation: lightning 1.5s infinite linear;
-#   }
-#   @keyframes lightning {
-#     0% { background-position: 0 0; }
-#     100% { background-position: 50px 50px; }
-#   }
-# </style>
-# """
-# progress_bar_html = """
-# <div style="width: 100%; background-color: #ddd;">
-#   <div id="myBar" style="width: 0%; height: 30px; background: repeating-linear-gradient(
-#         45deg,
-#         red,
-#         red 10px,
-#         black 10px,
-#         black 20px
-#     ); text-align: center;">0%</div>
-# </div>
-# """
+st.set_page_config(
+    page_title="⌛ My ML Buddy",
+    page_icon="⌛",
+    layout="centered",
+    initial_sidebar_state="auto",
+)
 
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as image_file:
