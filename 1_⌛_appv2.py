@@ -39,7 +39,7 @@ from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 st.set_page_config(
-    page_title="⌛ My ML Buddy",
+    page_title="My ML Buddy",
     page_icon="⌛",
     layout="centered",
     initial_sidebar_state="auto",
