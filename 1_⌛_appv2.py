@@ -188,7 +188,7 @@ def main():
         st.session_state["preprocessed_data"] = None
     add_bg_from_local('background.png')  
     st.title('My ML buddy in Progress')
-    
+    st.write("A video of MY ML Buddy in action is live here https://youtu.be/j7-GOT51-e0")
     #file = st.file_uploader("Upload your dataset", type=['csv'])
     file = st.file_uploader("Upload your dataset", type=['csv', 'txt', 'json', 'xlsx', 'xls'])
     if file is not None:
