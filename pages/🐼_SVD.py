@@ -447,7 +447,7 @@ st.title("Interactive SVD Data Transformation with Heatmaps")
 st.markdown(
                 "<div style='font-family:Times New Roman, Times, serif; font-style:italic;'>"
                 "Hello everyone, This webapp is supported on both laptop and mobile. Here is how to use the application. <br>"
-                " Upload the dataset, and see magic.'
+                " Upload the dataset, and see magic."
                 "3. Enjoy the output."
     
               #  "I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following."
