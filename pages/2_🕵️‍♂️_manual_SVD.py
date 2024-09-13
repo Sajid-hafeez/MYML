@@ -208,7 +208,7 @@ st.write("### Step 1: Select the number of rows and columns")
 st.write("This webapp is supported on both laptop and mobile. Here is how to use the application.  ")
 st.write("1. Select the number of rows for the materix ")
 st.write("2. Input the values for the matrix. ")
-st.write("3. ENjoy the output.")
+st.write("3. Enjoy the output.")
 
 # Step 1: Select number of rows and columns
 st.write("### Step 1: Select the number of rows and columns")
