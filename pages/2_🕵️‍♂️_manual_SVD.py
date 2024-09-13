@@ -205,7 +205,7 @@ st.title("Custom Matrix SVD Analysis App")
 
 st.markdown(
                 "<div style='font-family:Times New Roman, Times, serif; font-style:italic;'>"
-                "Hello everyone, This webapp is supported on both laptop and mobile. Here is how to use the application."
+                "Hello everyone, This webapp is supported on both laptop and mobile. Here is how to use the application. <br>"
                 "1. Select the number of rows for the materix."
                 "2. Input the values for the matrix. "
                 "3. Enjoy the output."
