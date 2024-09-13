@@ -205,6 +205,13 @@ st.title("Custom Matrix SVD Analysis App")
 
 # Step 1: Select number of rows and columns
 st.write("### Step 1: Select the number of rows and columns")
+st.write("This webapp is supported on both laptop and mobile. Here is how to use the application.  ")
+st.write("1. Select the number of rows for the materix ")
+st.write("2. Input the values for the matrix. ")
+st.write("3. ENjoy the output.")
+
+# Step 1: Select number of rows and columns
+st.write("### Step 1: Select the number of rows and columns")
 num_rows = st.number_input('Select number of rows', min_value=2, max_value=10, value=3)
 num_cols = st.number_input('Select number of columns', min_value=2, max_value=10, value=3)
 
