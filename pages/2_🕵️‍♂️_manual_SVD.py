@@ -203,12 +203,19 @@ st.set_page_config(
 # Streamlit App Layout
 st.title("Custom Matrix SVD Analysis App")
 
+st.markdown(
+                "<div style='font-family:Times New Roman, Times, serif; font-style:italic;'>"
+                "Hello everyone, This webapp is supported on both laptop and mobile. Here is how to use the application."
+                "1. Select the number of rows for the materix."
+                "2. Input the values for the matrix. "
+                "3. Enjoy the output."
+    
+              #  "I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following."
+                "</div>",
+                unsafe_allow_html=True,
+            )
 # Step 1: Select number of rows and columns
-st.write("### Step 1: Select the number of rows and columns")
-st.write("This webapp is supported on both laptop and mobile. Here is how to use the application.  ")
-st.write("1. Select the number of rows for the materix ")
-st.write("2. Input the values for the matrix. ")
-st.write("3. Enjoy the output.")
+
 
 # Step 1: Select number of rows and columns
 st.write("### Step 1: Select the number of rows and columns")
