@@ -437,7 +437,12 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
 from io import StringIO
-
+st.set_page_config(
+    page_title="SVD",
+    page_icon="🐼",
+    layout="centered",
+    initial_sidebar_state="auto",
+)
 st.title("Interactive SVD Data Transformation with Heatmaps")
 
 # File uploader for any dataset
