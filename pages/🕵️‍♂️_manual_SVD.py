@@ -194,7 +194,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit as st
 import plotly.express as px
-
+st.set_page_config(
+    page_title="SVD Manual",
+    page_icon="🕵️‍♂️",
+    layout="centered",
+    initial_sidebar_state="auto",
+)
 # Streamlit App Layout
 st.title("Custom Matrix SVD Analysis App")
 
