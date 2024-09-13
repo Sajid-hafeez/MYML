@@ -444,7 +444,16 @@ st.set_page_config(
     initial_sidebar_state="auto",
 )
 st.title("Interactive SVD Data Transformation with Heatmaps")
-
+st.markdown(
+                "<div style='font-family:Times New Roman, Times, serif; font-style:italic;'>"
+                "Hello everyone, This webapp is supported on both laptop and mobile. Here is how to use the application. <br>"
+                " Upload the dataset, and see magic.'
+                "3. Enjoy the output."
+    
+              #  "I offer services related to Data science and statistical analysis using R, Python, Stata, SPSS, Weka and Power BI. Feel free to contact me on the following."
+                "</div>",
+                unsafe_allow_html=True,
+            )
 # File uploader for any dataset
 uploaded_file = st.file_uploader("Upload your dataset (CSV file)", type="csv")
 
