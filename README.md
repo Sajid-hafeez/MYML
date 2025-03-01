@@ -5,7 +5,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.22.0-FF4B4B.svg)](https://streamlit.io)
 
 ![ML Buddy Demo](https://img.shields.io/badge/Demo-Video_Available-red?style=flat&logo=youtube)  
-*[Watch Demo Video](https://youtu.be/j7-GOT51-e0)*
+*[Watch Demo Video](https://youtu.be/j7-GOT51-e0?si=KvzMIUEU4CnNHr47)*
 
 An end-to-end machine learning platform that automates data analysis, preprocessing, and model training with a user-friendly interface.
 
