@@ -45,7 +45,7 @@ An end-to-end machine learning platform that automates data analysis, preprocess
 - Real-time result updates
 
 ### Deployment Ready
-Try the app now on https://my-mlbuddy.streamlit.app/
+Try the app now on [here](https://my-mlbuddy.streamlit.app/)
 
 ## 🛠 Installation
 
