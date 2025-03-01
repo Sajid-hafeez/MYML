@@ -8,8 +8,6 @@
 
 An end-to-end machine learning platform that automates data analysis, preprocessing, and model training with a user-friendly interface.
 
-![App Screenshot](https://via.placeholder.com/800x400.png?text=My+ML+Buddy+Interface) *Screenshot placeholder*
-
 ## 🌟 Features
 
 ### Automated EDA
