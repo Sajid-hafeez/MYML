@@ -3,8 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.22.0-FF4B4B.svg)](https://streamlit.io)
-
 [![ML Buddy Demo](https://img.shields.io/badge/Demo-Video_Available-red?style=flat&logo=youtube)](https://www.youtube.com/watch?v=j7-GOT51-e0&t=15s)
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.4+-orange.svg)](https://www.tensorflow.org/)
+[![Plotly](https://img.shields.io/badge/Plotly-5.0+-blue.svg)](https://plotly.com/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-0.24+-f89c2c.svg)](https://scikit-learn.org/)
+[![Pandas](https://img.shields.io/badge/Pandas-1.2+-150458.svg)](https://pandas.pydata.org/)
+[![NumPy](https://img.shields.io/badge/NumPy-1.19+-013243.svg)](https://numpy.org/)
 
 An end-to-end machine learning platform that automates data analysis, preprocessing, and model training with a user-friendly interface.
 
