@@ -45,11 +45,7 @@ An end-to-end machine learning platform that automates data analysis, preprocess
 - Real-time result updates
 
 ### Deployment Ready
-- Docker compatible
-- Single-command deployment
-- Cloud-ready architecture
-- Session state management
-- Data export capabilities
+Try the app now on https://my-mlbuddy.streamlit.app/
 
 ## 🛠 Installation
 
