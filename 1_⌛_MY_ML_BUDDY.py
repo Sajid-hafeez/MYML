@@ -187,8 +187,8 @@ def main():
     if "preprocessed_data" not in st.session_state:
         st.session_state["preprocessed_data"] = None
     add_bg_from_local('background.png')  
-    st.title('My ML buddy in Progress')
-    st.write("A video of MY ML Buddy in action is live here https://youtu.be/j7-GOT51-e0")
+    st.title('My ML buddy')
+    st.write("A video of MY ML Buddy in action is live [here](https://youtu.be/j7-GOT51-e0?si=G_AOHacjJo0A8T3Z)")
     #file = st.file_uploader("Upload your dataset", type=['csv'])
     file = st.file_uploader("Upload your dataset", type=['csv', 'txt', 'json', 'xlsx', 'xls'])
     if file is not None:
