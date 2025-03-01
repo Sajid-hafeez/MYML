@@ -54,7 +54,7 @@ An end-to-end machine learning platform that automates data analysis, preprocess
 ### Quick Start
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/my-ml-buddy.git
+git clone https://github.com/Sajid-hafeez/my-ml-buddy.git
 cd my-ml-buddy
 
 # Install dependencies
