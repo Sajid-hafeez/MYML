@@ -63,4 +63,4 @@ cd my-ml-buddy
 pip install -r requirements.txt
 
 # Launch application
-streamlit run src/app.py
+streamlit run 1_⌛_MY_ML_BUDDY.py
